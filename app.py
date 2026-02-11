@@ -1,190 +1,162 @@
 import streamlit as st
 import google.generativeai as genai
 import pandas as pd
-import time
 from PIL import Image
 
 # ---------------------------------------------------------
-# 1. APP CONFIGURATION (Must be first)
+# 1. APP CONFIGURATION
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="ResellerLens AI",
+    page_title="ResellerLens",
     page_icon="✨",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
 # ---------------------------------------------------------
-# ---------------------------------------------------------
-# 2. CUSTOM CSS (The "High Contrast" Fix)
+# 2. HIGH-CONTRAST CSS (Fixes Invisible Text)
 # ---------------------------------------------------------
 st.markdown("""
     <style>
-    /* Force Background to White and Text to Black */
+    /* 1. Force Background White, Text Black */
     .stApp {
         background-color: #ffffff;
         color: #000000;
     }
     
-    /* Force Input Fields to have visible text */
+    /* 2. Fix Input Fields (Grey background, Black text) */
     .stTextInput>div>div>input {
-        color: #000000;
-        background-color: #f0f2f6;
+        color: #000000 !important;
+        background-color: #f0f2f6 !important;
+        border: 1px solid #ddd;
     }
     
-    /* Force Headers to be Black */
-    h1, h2, h3, h4, h5, h6, p, span {
+    /* 3. Fix Headers & Labels */
+    h1, h2, h3, h4, p, label {
         color: #000000 !important;
     }
     
-    /* Hide Streamlit Branding */
+    /* 4. THE BUTTON FIX (Black Button, White Text) */
+    .stButton>button {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+        border: none;
+        border-radius: 8px;
+        height: 50px;
+        width: 100%;
+        font-weight: bold;
+        font-size: 16px;
+    }
+    .stButton>button:hover {
+        background-color: #333333 !important;
+        color: #ffffff !important;
+    }
+    
+    /* 5. Hide Streamlit Branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    
-    /* Mobile-Friendly Buttons */
-    .stButton>button {
-        width: 100%;
-        border-radius: 12px;
-        background-color: #000000;
-        color: #ffffff !important; /* Button text must remain white */
-        height: 50px;
-        font-weight: bold;
-        border: none;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
     </style>
 """, unsafe_allow_html=True)
+
 # ---------------------------------------------------------
-# 3. SESSION STATE (Remembering User Data)
+# 3. SETUP & LOGIN
 # ---------------------------------------------------------
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
-if 'api_key' not in st.session_state:
-    # In a real app, you would use st.secrets here
-    st.session_state.api_key = "" 
 
-# ---------------------------------------------------------
-# 4. LOGIN SCREEN
-# ---------------------------------------------------------
 def login_screen():
-    st.markdown("<h1 style='text-align: center;'>✨ ResellerLens</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #666;'>Professional AI Listing Tool</p>", unsafe_allow_html=True)
-    st.write("")
+    st.markdown("<br><br><br>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: black;'>✨ ResellerLens</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: grey;'>Professional AI Listing Tool</p>", unsafe_allow_html=True)
+    
     st.write("")
     
-    with st.container():
-        # Using a card-like layout
-        password = st.text_input("Enter Access Code", type="password", placeholder="••••••••")
-        
-        # NOTE: In production, store this key in Streamlit Secrets, not here!
-        user_key = st.text_input("Enter Your Google API Key", type="password", placeholder="AIzaSy...")
-        
-        if st.button("Unlock Tool 🔓"):
-            if password == "MONEY2026" and len(user_key) > 10:
-                st.session_state.logged_in = True
-                st.session_state.api_key = user_key
-                st.rerun()
-            elif password != "MONEY2026":
-                st.error("❌ Invalid Access Code. Please purchase a license.")
-            else:
-                st.error("⚠️ Please enter a valid API Key.")
+    # Simple Password Field
+    password = st.text_input("Enter Access Code", type="password", placeholder="••••••••")
+    
+    st.write("")
+    
+    if st.button("Login 🔐"):
+        if password == "MONEY2026":  # Change this password if you want!
+            st.session_state.logged_in = True
+            st.rerun()
+        else:
+            st.error("❌ Incorrect Access Code")
 
 # ---------------------------------------------------------
-# 5. MAIN APPLICATION
+# 4. MAIN APP LOGIC
 # ---------------------------------------------------------
 def main_app():
-    # Setup AI
-    genai.configure(api_key=st.session_state.api_key)
-    model = genai.GenerativeModel('gemini-2.5-flash')
+    # Load Key from Secrets (Invisible to user)
+    try:
+        genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+        model = genai.GenerativeModel('gemini-2.5-flash')
+    except:
+        st.error("⚠️ Server Error: API Key missing. Please check Streamlit Secrets.")
+        return
 
-    # Top Navigation
-    tab1, tab2, tab3 = st.tabs(["🚀 Instant", "📦 Batch", "📸 Coach"])
+    # Tabs Interface
+    tab1, tab2, tab3 = st.tabs(["🚀 Social", "📦 Inventory", "🎬 Coach"])
 
-    # --- TAB 1: INSTANT LISTING ---
+    # --- TAB 1: SOCIAL ---
     with tab1:
-        st.write("### ⚡ Quick List")
-        uploaded_file = st.file_uploader("Upload Item Photo", type=['jpg', 'png', 'jpeg'], key="t1")
-        
-        if uploaded_file and st.button("Generate Listing ✨", key="b1"):
-            with st.spinner("Analyzing item details..."):
+        st.markdown("### ⚡ Instant Listing")
+        uploaded_file = st.file_uploader("Upload Item", type=['jpg', 'jpeg', 'png'], key="t1")
+        if uploaded_file and st.button("Generate ✨", key="b1"):
+            with st.spinner("Writing caption..."):
                 try:
-                    image = Image.open(uploaded_file)
-                    st.image(image, caption='Your Item', use_column_width=True)
-                    
-                    prompt = """
-                    You are an expert Indian reseller. 
-                    OUTPUT 1: 📱 INSTAGRAM/WHATSAPP (Short caption, emojis, Price in ₹, 'DM to buy')
-                    OUTPUT 2: 💼 OLX/QUICKR (Professional Title, Condition, Description, Price ₹)
-                    OUTPUT 3: 💡 FLIP TIP (One specific tip to sell faster)
-                    """
-                    response = model.generate_content([prompt, image])
-                    st.success("Analysis Complete!")
-                    st.markdown(response.text)
+                    img = Image.open(uploaded_file)
+                    st.image(img, width=200)
+                    prompt = "You are an Indian Reseller. Write a short, catchy Instagram caption with Price (₹) and hashtags."
+                    response = model.generate_content([prompt, img])
+                    st.success("Copy this text:")
+                    st.code(response.text, language=None)
                 except Exception as e:
                     st.error(f"Error: {e}")
 
-    # --- TAB 2: BATCH INVENTORY ---
+    # --- TAB 2: INVENTORY ---
     with tab2:
-        st.write("### 🏭 Bulk Inventory")
-        st.info("Upload multiple photos to generate an Excel sheet.")
-        uploaded_files = st.file_uploader("Select Photos", accept_multiple_files=True, type=['jpg', 'png'], key="t2")
-        
-        if uploaded_files and st.button("Process All 📦", key="b2"):
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-            inventory_data = []
+        st.markdown("### 🏭 Batch Mode")
+        files = st.file_uploader("Upload 5-10 Photos", accept_multiple_files=True, key="t2")
+        if files and st.button("Process All 📦", key="b2"):
+            status = st.empty()
+            data = []
+            bar = st.progress(0)
             
-            for i, file in enumerate(uploaded_files):
-                status_text.text(f"Processing image {i+1} of {len(uploaded_files)}...")
-                image = Image.open(file)
-                
+            for i, f in enumerate(files):
+                status.write(f"Scanning item {i+1}...")
                 try:
-                    prompt = "Output ONLY: Title | Price (₹) | Description | Flip Tip"
-                    response = model.generate_content([prompt, image])
-                    text = response.text.strip()
-                    parts = text.split('|')
+                    img = Image.open(f)
+                    res = model.generate_content(["Output ONLY: Title | Price(₹) | Desc | Tip", img])
+                    parts = res.text.split('|')
                     if len(parts) >= 4:
-                        inventory_data.append({
-                            "Title": parts[0], "Price": parts[1], 
-                            "Description": parts[2], "Tip": parts[3]
-                        })
+                        data.append({"Title": parts[0], "Price": parts[1], "Desc": parts[2]})
                 except:
                     pass
-                
-                progress_bar.progress((i + 1) / len(uploaded_files))
+                bar.progress((i+1)/len(files))
             
-            if inventory_data:
-                df = pd.DataFrame(inventory_data)
-                csv = df.to_csv(index=False).encode('utf-8')
-                st.download_button(
-                    "📥 Download Excel CSV",
-                    csv,
-                    "inventory.csv",
-                    "text/csv",
-                    key='download-csv'
-                )
-                st.success("Batch processing done!")
+            if data:
+                status.success("Done!")
+                df = pd.DataFrame(data)
+                st.dataframe(df)
+                st.download_button("Download CSV", df.to_csv(), "stock.csv")
 
-    # --- TAB 3: PHOTO COACH ---
+    # --- TAB 3: COACH ---
     with tab3:
-        st.write("### 🎬 Photo Director")
-        st.info("Get AI advice on how to take better product shots.")
-        coach_file = st.file_uploader("Upload Shot to Analyze", type=['jpg', 'png'], key="t3")
-        
-        if coach_file and st.button("Analyze Quality 🔍", key="b3"):
-            with st.spinner("Critiquing photo..."):
-                image = Image.open(coach_file)
-                st.image(image, use_column_width=True)
-                prompt = "Act as a pro photographer. Give 3 specific commands to improve this photo's lighting, angle, or background."
-                response = model.generate_content([prompt, image])
-                st.warning(response.text)
+        st.markdown("### 🎬 Photo Director")
+        f = st.file_uploader("Check Photo Quality", key="t3")
+        if f and st.button("Analyze 🔍", key="b3"):
+            img = Image.open(f)
+            st.image(img, width=200)
+            res = model.generate_content(["Act as a pro photographer. Give 3 tips to fix this photo.", img])
+            st.info(res.text)
 
 # ---------------------------------------------------------
-# 6. APP LOGIC
+# 5. RUN
 # ---------------------------------------------------------
 if not st.session_state.logged_in:
     login_screen()
 else:
     main_app()
-  
+    
