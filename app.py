@@ -15,51 +15,46 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# 2. CUSTOM CSS (The "Minimalist" Look)
+# ---------------------------------------------------------
+# 2. CUSTOM CSS (The "High Contrast" Fix)
 # ---------------------------------------------------------
 st.markdown("""
     <style>
+    /* Force Background to White and Text to Black */
+    .stApp {
+        background-color: #ffffff;
+        color: #000000;
+    }
+    
+    /* Force Input Fields to have visible text */
+    .stTextInput>div>div>input {
+        color: #000000;
+        background-color: #f0f2f6;
+    }
+    
+    /* Force Headers to be Black */
+    h1, h2, h3, h4, h5, h6, p, span {
+        color: #000000 !important;
+    }
+    
     /* Hide Streamlit Branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    
-    /* Clean Font & Background */
-    .stApp {
-        background-color: #f8f9fa;
-        font-family: 'Helvetica Neue', sans-serif;
-    }
     
     /* Mobile-Friendly Buttons */
     .stButton>button {
         width: 100%;
         border-radius: 12px;
         background-color: #000000;
-        color: white;
+        color: #ffffff !important; /* Button text must remain white */
         height: 50px;
         font-weight: bold;
         border: none;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
-    }
-    .stButton>button:hover {
-        background-color: #333333;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 8px rgba(0,0,0,0.15);
-    }
-    
-    /* Success Messages */
-    .stSuccess {
-        border-radius: 10px;
-    }
-    
-    /* Input Fields */
-    .stTextInput>div>div>input {
-        border-radius: 10px;
     }
     </style>
 """, unsafe_allow_html=True)
-
 # ---------------------------------------------------------
 # 3. SESSION STATE (Remembering User Data)
 # ---------------------------------------------------------
