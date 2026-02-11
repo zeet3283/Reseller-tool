@@ -14,7 +14,7 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# 2. ULTRA-MODERN CSS (The Polish)
+# 2. ULTRA-MODERN CSS (Mobile First)
 # ---------------------------------------------------------
 st.markdown("""
     <style>
@@ -25,53 +25,58 @@ st.markdown("""
         font-family: 'Poppins', sans-serif;
     }
     
-    /* GRADIENT BACKGROUND FOR HEADER */
-    .stAppHeader {
-        background-color: transparent;
+    /* GRADIENT HEADER */
+    .gradient-text {
+        background: linear-gradient(120deg, #11998e, #38ef7d);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+        font-size: 2.5em;
+        text-align: center;
+        margin-bottom: 0;
     }
-    
-    /* CUSTOM CARD DESIGN */
-    .css-1r6slb0 {
-        background-color: white;
-        border-radius: 20px;
-        padding: 20px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-        border: 1px solid #f0f0f0;
-    }
-    
-    /* SUCCESS METRICS (Green Text) */
+
+    /* METRICS (Big Green Numbers) */
     div[data-testid="stMetricValue"] {
-        font-size: 28px;
+        font-size: 24px;
         color: #00b894;
         font-weight: 700;
     }
     
-    /* BUTTON STYLING (Gradient & Shadow) */
+    /* TABS STYLING */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 10px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        height: 50px;
+        white-space: pre-wrap;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        gap: 1px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #e6fffa;
+        border-bottom: 2px solid #00b894;
+    }
+
+    /* BUTTONS (Gradient) */
     div.stButton > button {
         background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%);
         color: white !important;
         border: none;
-        padding: 15px 30px;
+        padding: 12px 24px;
         border-radius: 12px;
         font-weight: 600;
-        letter-spacing: 0.5px;
-        box-shadow: 0 4px 15px rgba(56, 239, 125, 0.4);
-        transition: all 0.3s ease;
+        width: 100%;
+        box-shadow: 0 4px 10px rgba(56, 239, 125, 0.3);
     }
     div.stButton > button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(56, 239, 125, 0.6);
-    }
-    
-    /* INPUT FIELDS */
-    .stTextInput > div > div > input, .stNumberInput > div > div > input {
-        background-color: #f8f9fa;
-        border: 1px solid #e9ecef;
-        border-radius: 10px;
-        color: #333;
     }
 
-    /* HIDE STREAMLIT BRANDING */
+    /* HIDE JUNK */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
@@ -79,177 +84,143 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 3. HELPER LOGIC
+# 3. LOGIN SCREEN
 # ---------------------------------------------------------
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
 def login_screen():
-    col1, col2, col3 = st.columns([1,2,1])
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown('<div class="gradient-text">ResellerLens</div>', unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #888;'>AI Power for Modern Sellers</p>", unsafe_allow_html=True)
+    st.divider()
+    
+    col1, col2, col3 = st.columns([1,8,1])
     with col2:
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        st.markdown("<h1 style='text-align: center; color: #333; margin-bottom:0;'>ResellerLens</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #888; font-size: 14px;'>The AI Advantage for Modern Sellers</p>", unsafe_allow_html=True)
-        st.divider()
-        
-        # Login Box
-        password = st.text_input("Access Code", type="password", placeholder="Enter your invite code...", label_visibility="collapsed")
-        
-        if st.button("Enter Dashboard 🚀", use_container_width=True):
+        password = st.text_input("Access Code", type="password", placeholder="Enter Invite Code...", label_visibility="collapsed")
+        if st.button("Unlock Dashboard 🚀"):
             if password == "MONEY2026":
-                st.success("Access Granted")
-                time.sleep(0.5)
                 st.session_state.logged_in = True
                 st.rerun()
             else:
-                st.toast("❌ Invalid Code. Please try again.")
+                st.toast("❌ Invalid Code")
 
 # ---------------------------------------------------------
-# 4. MAIN APP LOGIC
+# 4. MAIN APP
 # ---------------------------------------------------------
 def main_app():
-    # --- SIDEBAR (Navigation) ---
-    with st.sidebar:
-        st.title("💎 ResellerLens")
-        st.write("v11.0 Pro Edition")
-        st.divider()
-        mode = st.radio("Navigation", ["🔥 Profit Machine", "📸 Photo Studio", "⚙️ Settings"])
-        st.divider()
-        st.info("💡 **Tip:** Clear photos = 20% higher price.")
-        if st.button("Logout"):
-            st.session_state.logged_in = False
-            st.rerun()
-
-    # Setup AI
+    # Header
+    st.markdown('<div class="gradient-text">ResellerLens</div>', unsafe_allow_html=True)
+    
+    # AI Setup
     try:
         api_key = st.secrets.get("GOOGLE_API_KEY")
         if not api_key:
-            st.error("⚠️ API Key Missing in Secrets")
+            st.error("⚠️ API Key Missing")
             return
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-2.5-flash')
     except:
+        st.error("Connection Error")
         return
 
-    # --- PAGE 1: PROFIT MACHINE ---
-    if mode == "🔥 Profit Machine":
-        st.markdown("### ⚡ Instant Listing Generator")
-        st.markdown("Upload a photo to generate listings and calculate profit margins.")
+    # --- NAVIGATION TABS (Visible on Mobile) ---
+    tab1, tab2, tab3 = st.tabs(["🔥 Profit", "📸 Studio", "⚙️ Settings"])
+
+    # --- TAB 1: PROFIT MACHINE ---
+    with tab1:
+        st.markdown("### ⚡ Instant Listing")
         
-        # 1. IMAGE UPLOAD
-        with st.container():
-            uploaded_file = st.file_uploader("Upload Product", type=['jpg', 'jpeg', 'png'], label_visibility="collapsed")
+        # 1. Upload
+        uploaded_file = st.file_uploader("Product Photo", type=['jpg', 'jpeg', 'png'], label_visibility="collapsed")
         
         if uploaded_file:
-            # Layout: Image on Left, Inputs on Right (Desktop) / Stacked (Mobile)
-            col1, col2 = st.columns([1, 2])
-            with col1:
-                st.image(uploaded_file, use_column_width=True, caption="Preview")
+            st.image(uploaded_file, caption="Preview", use_column_width=True)
             
-            with col2:
-                cost_price = st.number_input("💸 Cost Price (What you paid)", min_value=0, step=50, value=0)
-                
-                if st.button("Analyze & Write Listing ✨", use_container_width=True):
-                    with st.spinner("🔍 AI is researching market value..."):
+            # 2. Cost Input
+            col_a, col_b = st.columns(2)
+            with col_a:
+                st.write("**Cost Price (₹)**")
+            with col_b:
+                cost_price = st.number_input("Cost", min_value=0, step=50, value=0, label_visibility="collapsed")
+            
+            # 3. Generate Button
+            if st.button("Analyze & Write Listing ✨"):
+                with st.spinner("🔍 Scanning market value..."):
+                    try:
+                        img = Image.open(uploaded_file)
+                        prompt = f"""
+                        Act as an Indian Reseller.
+                        Cost Price: ₹{cost_price}
+                        
+                        Analyze this image. Output EXACTLY with separators:
+                        
+                        EST_PRICE: [Number only, e.g. 1500]
+                        CAPTION: [Catchy Instagram caption with hashtags]
+                        TITLE: [OLX Title]
+                        DESC: [OLX Description]
+                        TIP: [One flip tip]
+                        """
+                        response = model.generate_content([prompt, img])
+                        text = response.text
+                        
+                        # Parse Price
+                        est_price = "0"
+                        if "EST_PRICE:" in text:
+                            est_price = text.split("EST_PRICE:")[1].split("\n")[0].strip().replace("₹", "").replace(",", "")
+
+                        # --- FINANCIALS ---
+                        st.divider()
+                        m1, m2, m3 = st.columns(3)
+                        m1.metric("Cost", f"₹{cost_price}")
+                        m2.metric("Value", f"₹{est_price}")
                         try:
-                            img = Image.open(uploaded_file)
-                            
-                            # PROMPT
-                            prompt = f"""
-                            Act as a professional reseller.
-                            Cost Price: ₹{cost_price}
-                            
-                            Analyze this item image.
-                            
-                            Output EXACTLY in this format with separators:
-                            
-                            ESTIMATED_PRICE: [Just the number in rupees, e.g. 1500]
-                            SOCIAL_POST: [Write a 2-line catchy caption with emojis]
-                            OLX_TITLE: [SEO Friendly Title]
-                            OLX_DESC: [Professional description, condition, and details]
-                            PROFIT_TIP: [One expert tip to flip this fast]
-                            """
-                            
-                            response = model.generate_content([prompt, img])
-                            text = response.text
-                            
-                            # Simple Parsing (Robust)
-                            est_price = "0"
-                            try:
-                                for line in text.split('\n'):
-                                    if "ESTIMATED_PRICE:" in line:
-                                        est_price = line.split(":")[1].strip().replace("₹", "").replace(",", "")
-                            except:
-                                est_price = "0"
+                            profit = float(est_price) - cost_price
+                            m3.metric("Profit", f"₹{profit}")
+                            if profit > 0: st.balloons()
+                        except:
+                            m3.metric("Profit", "N/A")
+                        st.divider()
 
-                            # --- RESULTS DASHBOARD ---
-                            st.divider()
-                            st.markdown("### 💰 Financial Breakdown")
-                            
-                            # THE BIG METRICS ROW
-                            m1, m2, m3 = st.columns(3)
-                            m1.metric("Your Cost", f"₹{cost_price}")
-                            m2.metric("Market Value", f"₹{est_price}")
-                            
-                            # Profit Calc
-                            try:
-                                profit = float(est_price) - cost_price
-                                m3.metric("Net Profit", f"₹{profit}", delta=f"{profit} Profit")
-                                if profit > 0:
-                                    st.balloons()
-                            except:
-                                m3.metric("Profit", "Calc Error")
-                            
-                            st.divider()
-                            
-                            # TABS FOR CONTENT
-                            t1, t2 = st.tabs(["📱 Social Media", "💼 OLX / Amazon"])
-                            
-                            with t1:
-                                st.info("Copy this for Instagram/WhatsApp Status:")
-                                try:
-                                    content = text.split("SOCIAL_POST:")[1].split("OLX_TITLE:")[0].strip()
-                                    st.code(content, language="text")
-                                    st.markdown(f"**💡 Pro Tip:** {text.split('PROFIT_TIP:')[1].strip()}")
-                                except:
-                                    st.write(text) # Fallback if parsing fails
-                                
-                            with t2:
-                                try:
-                                    title = text.split("OLX_TITLE:")[1].split("OLX_DESC:")[0].strip()
-                                    desc = text.split("OLX_DESC:")[1].split("PROFIT_TIP:")[0].strip()
-                                    st.text_input("Title", title)
-                                    st.text_area("Description", desc, height=150)
-                                except:
-                                    st.write("Could not parse perfectly. See below:")
-                                    st.write(text)
-                            
-                        except Exception as e:
-                            st.error("AI Error. Please try a clearer photo.")
+                        # --- OUTPUTS ---
+                        st.info("📱 Social Caption")
+                        try:
+                            st.code(text.split("CAPTION:")[1].split("TITLE:")[0].strip(), language="text")
+                        except: st.write(text)
 
-    # --- PAGE 2: PHOTO STUDIO ---
-    elif mode == "📸 Photo Studio":
-        st.markdown("### 🎬 AI Photo Director")
-        st.info("Bad photos cost you money. Upload a shot here to get a professional critique.")
+                        st.success("💼 Marketplace Details")
+                        try:
+                            st.text_input("Title", text.split("TITLE:")[1].split("DESC:")[0].strip())
+                            st.text_area("Description", text.split("DESC:")[1].split("TIP:")[0].strip())
+                        except: pass
+
+                    except Exception as e:
+                        st.error("Please try a clearer photo.")
+
+    # --- TAB 2: PHOTO STUDIO ---
+    with tab2:
+        st.markdown("### 🎬 Photo Director")
+        st.info("Upload a bad photo to get 3 tips to fix it.")
         
         coach_file = st.file_uploader("Upload Image", key="coach")
         if coach_file:
             st.image(coach_file, width=200)
             if st.button("Critique My Shot 🔍"):
-                with st.spinner("Analyzing lighting and angles..."):
+                with st.spinner("Analyzing lighting..."):
                     img = Image.open(coach_file)
-                    res = model.generate_content(["Act as a harsh but helpful product photographer. Give 3 short, specific tips to improve this photo.", img])
+                    res = model.generate_content(["Act as a pro photographer. Give 3 short, specific tips to improve this photo.", img])
                     st.warning(res.text)
 
-    # --- PAGE 3: SETTINGS ---
-    elif mode == "⚙️ Settings":
-        st.write("### Account Settings")
+    # --- TAB 3: SETTINGS ---
+    with tab3:
+        st.write("### Profile")
         st.write("Plan: **Pro Reseller**")
-        st.write("Valid until: **Lifetime Access**")
-        st.button("Contact Support")
+        if st.button("Logout"):
+            st.session_state.logged_in = False
+            st.rerun()
 
 # ---------------------------------------------------------
-# 5. RUN APP
+# 5. RUN
 # ---------------------------------------------------------
 if not st.session_state.logged_in:
     login_screen()
