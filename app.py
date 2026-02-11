@@ -207,12 +207,22 @@ def main_app():
                             
                             with t1:
                                 st.info("Copy this for Instagram/WhatsApp Status:")
-                                st.code(text.split("SOCIAL_POST:")[1].split("OLX_TITLE:")[0].strip(), language="text")
-                                st.markdown(f"**💡 Pro Tip:** {text.split('PROFIT_TIP:')[1].strip()}")
+                                try:
+                                    content = text.split("SOCIAL_POST:")[1].split("OLX_TITLE:")[0].strip()
+                                    st.code(content, language="text")
+                                    st.markdown(f"**💡 Pro Tip:** {text.split('PROFIT_TIP:')[1].strip()}")
+                                except:
+                                    st.write(text) # Fallback if parsing fails
                                 
                             with t2:
-                                st.text_input("Title", text.split("OLX_TITLE:")[1].split("OLX_DESC:")[0].strip())
-                                st.text_area("Description", text.split("OLX_DESC:")[1].split("PROFIT_TIP:")[0].strip(), height=150)
+                                try:
+                                    title = text.split("OLX_TITLE:")[1].split("OLX_DESC:")[0].strip()
+                                    desc = text.split("OLX_DESC:")[1].split("PROFIT_TIP:")[0].strip()
+                                    st.text_input("Title", title)
+                                    st.text_area("Description", desc, height=150)
+                                except:
+                                    st.write("Could not parse perfectly. See below:")
+                                    st.write(text)
                             
                         except Exception as e:
                             st.error("AI Error. Please try a clearer photo.")
@@ -245,4 +255,4 @@ if not st.session_state.logged_in:
     login_screen()
 else:
     main_app()
-                            
+                                        
